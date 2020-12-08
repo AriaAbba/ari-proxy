@@ -5,6 +5,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.event.Logging;
 import akka.http.javadsl.model.ContentTypes;
+import akka.http.javadsl.model.HttpMethod;
 import akka.http.javadsl.model.HttpMethods;
 import akka.http.javadsl.model.HttpRequest;
 import akka.http.javadsl.model.HttpResponse;
@@ -111,9 +112,9 @@ public class AriCommandResponseKafkaProcessor {
     source
         .log(">>>   ARI COMMAND", ConsumerRecord::value)
         .withAttributes(LOG_LEVELS)
-        .map(AriCommandResponseKafkaProcessor::unmarshallAriCommandEnvelope)
+        .map((ConsumerRecord<String, String> record) -> unmarshallAriCommandEnvelope(record))
         .map(
-            msgEnvelope -> {
+            (AriCommandEnvelope msgEnvelope) -> {
               AriCommandResponseProcessing.registerCallContext(
                       callContextProvider,
                       msgEnvelope.getCallContext(),
@@ -128,7 +129,7 @@ public class AriCommandResponseKafkaProcessor {
                   msgEnvelope.getAriCommand());
             })
         .map(
-            context ->
+            (CallContextAndCommandRequestContext context) ->
                 Tuple.of(
                     toHttpRequest(context.getAriCommand(), restUri, restUser, restPassword),
                     context))
@@ -141,7 +142,7 @@ public class AriCommandResponseKafkaProcessor {
         .wireTap(Sink.foreach(gatherMetrics(metricsService, stasisApp)))
         .mapAsync(1, rawHttpResponseAndContext -> toAriResponse(rawHttpResponseAndContext, system))
         .map(
-            ariResponseAndContext ->
+            (Tuple2<AriResponse, CallContextAndCommandRequestContext> ariResponseAndContext) ->
                 envelopeAriResponseToProducerRecord(
                     commandsTopic, eventsAndResponsesTopic, ariResponseAndContext))
         .log(">>>   ARI RESPONSE", ProducerRecord::value)
@@ -192,7 +193,10 @@ public class AriCommandResponseKafkaProcessor {
         kafkaCommandsTopic,
         ariResponse,
         context.getCallContext(),
-        command.extractResourceRelations().map(AriResourceRelation::getResource).toJavaList(),
+        command
+            .extractResourceRelations()
+            .map((AriResourceRelation ariResourceRelation) -> ariResourceRelation.getResource())
+            .toJavaList(),
         context.getCommandId(),
         new CommandRequest(command.getMethod(), command.getUrl()));
   }
@@ -223,13 +227,17 @@ public class AriCommandResponseKafkaProcessor {
                         StringUtils.trimToNull(
                             strictText.getData().decodeString(Charset.defaultCharset())))
                     .map(
-                        rawBody ->
+                        (String rawBody) ->
                             Try.of(() -> genericReader.readTree(rawBody))
                                 .map(
-                                    jsonBody ->
+                                    (JsonNode jsonBody) ->
                                         new AriResponse(response.status().intValue(), jsonBody))
-                                .map(res -> responseWithContext.map1(httpResponse -> res))
-                                .map(tuple -> CompletableFuture.completedFuture(tuple))
+                                .map(
+                                    (AriResponse res) ->
+                                        responseWithContext.map1(httpResponse -> res))
+                                .map(
+                                    (Tuple2<AriResponse, CallContextAndCommandRequestContext>
+                                            tuple) -> CompletableFuture.completedFuture(tuple))
                                 .getOrElseGet(
                                     t ->
                                         Future
@@ -252,13 +260,13 @@ public class AriCommandResponseKafkaProcessor {
 
     final String bodyJson =
         Option.of(body)
-            .map(value -> Try.of(() -> genericWriter.writeValueAsString(value)))
+            .map((Object value) -> Try.of(() -> genericWriter.writeValueAsString(value)))
             .getOrElse(Try.success(""))
             .getOrElseThrow(t -> new RuntimeException(t));
 
     return HttpMethods.lookup(method)
         .map(
-            validHttpMethod ->
+            (HttpMethod validHttpMethod) ->
                 HttpRequest.create()
                     .withMethod(validHttpMethod)
                     .addCredentials(HttpCredentials.createBasicHttpCredentials(user, password))

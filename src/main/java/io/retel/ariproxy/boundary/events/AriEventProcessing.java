@@ -16,7 +16,7 @@ import io.retel.ariproxy.akkajavainterop.PatternsAdapter;
 import io.retel.ariproxy.boundary.callcontext.api.CallContextProvided;
 import io.retel.ariproxy.boundary.callcontext.api.ProvideCallContext;
 import io.retel.ariproxy.boundary.callcontext.api.ProviderPolicy;
-import io.retel.ariproxy.boundary.commandsandresponses.auxiliary.AriMessageEnvelope;
+import io.retel.ariproxy.boundary.commandsandresponses.auxiliary;
 import io.retel.ariproxy.boundary.commandsandresponses.auxiliary.AriMessageType;
 import io.retel.ariproxy.boundary.commandsandresponses.auxiliary.AriResource;
 import io.retel.ariproxy.metrics.IncreaseCounter;

@@ -24,7 +24,7 @@ public class AriCommandResponseProcessing {
         ariCommand
             .extractResourceRelations()
             .find(AriResourceRelation::isCreated)
-            .map(AriResourceRelation::getResource);
+            .map((AriResourceRelation ariResourceRelation) -> ariResourceRelation.getResource());
 
     if (maybeResource.isEmpty()) {
       return Try.failure(

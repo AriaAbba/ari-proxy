@@ -87,7 +87,7 @@ public enum AriMessageType {
     return body ->
         Some(
             Option.of(body.at(resourceIdXPath))
-                .map(JsonNode::asText)
+                .map((JsonNode jsonNode) -> jsonNode.asText())
                 .flatMap(type -> StringUtils.isBlank(type) ? None() : Some(type))
                 .toTry(
                     () ->

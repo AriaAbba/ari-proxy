@@ -52,7 +52,7 @@ public class AriCommand {
 
     final AriCommandType commandType = AriCommandType.fromRequestUri(getUrl());
     if (!commandType.isCreationCommand()) {
-      return ariResources.map(r -> new AriResourceRelation(r, false));
+      return ariResources.map((AriResource r) -> new AriResourceRelation(r, false));
     }
 
     final Option<AriResource> createdResourceFromUri =
@@ -63,7 +63,9 @@ public class AriCommand {
           commandType
               .extractResourceIdFromBody(OBJECT_MAPPER.writeValueAsString(getBody()))
               .flatMap(Value::toOption)
-              .map(resourceId -> new AriResource(commandType.getResourceType(), resourceId));
+              .map(
+                  (String resourceId) ->
+                      new AriResource(commandType.getResourceType(), resourceId));
 
       final Option<AriResource> createdResource =
           createdResourceFromUri.orElse(createdResourceFromBody);
@@ -73,9 +75,10 @@ public class AriCommand {
       }
 
       return ariResources.map(
-          ariResource ->
+          (AriResource ariResource) ->
               new AriResourceRelation(
-                  ariResource, createdResource.map(r -> r.equals(ariResource)).getOrElse(false)));
+                  ariResource,
+                  createdResource.map((AriResource r) -> r.equals(ariResource)).getOrElse(false)));
     } catch (JsonProcessingException e) {
       throw new IllegalStateException("Unable to serialize command body: " + this, e);
     }

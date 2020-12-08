@@ -99,7 +99,7 @@ public enum AriCommandType {
         pathsToCommandTypes.entrySet().stream()
             .filter(entry -> pathMatchesPathTemplateWithPlaceholders(uri, entry.getKey()))
             .findFirst()
-            .map(Map.Entry::getValue);
+            .map(stringAriCommandTypeEntry -> stringAriCommandTypeEntry.getValue());
 
     return ariCommandType.orElse(UNKNOWN);
   }
@@ -126,7 +126,7 @@ public enum AriCommandType {
 
     return extractAllResources(uri)
         .find(resource -> resource.getType().equals(this.getResourceType()))
-        .map(AriResource::getId);
+        .map((AriResource ariResource) -> ariResource.getId());
   }
 
   public static List<AriResource> extractAllResources(final String uri) {
@@ -138,7 +138,7 @@ public enum AriCommandType {
         pathsToCommandTypes.entrySet().stream()
             .filter(entry -> pathMatchesPathTemplateWithPlaceholders(uri, entry.getKey()))
             .findFirst()
-            .map(Map.Entry::getKey);
+            .map(stringAriCommandTypeEntry -> stringAriCommandTypeEntry.getKey());
 
     if (!maybePathTemplate.isPresent()) {
       return List.empty();
@@ -197,7 +197,7 @@ public enum AriCommandType {
                 .flatMap(root -> Option.of(root).toTry())
                 .toOption()
                 .flatMap(root -> Option.of(root.at(resourceIdXPath)))
-                .map(JsonNode::asText)
+                .map((JsonNode jsonNode) -> jsonNode.asText())
                 .flatMap(type -> StringUtils.isBlank(type) ? None() : Some(type))
                 .toTry(
                     () ->
