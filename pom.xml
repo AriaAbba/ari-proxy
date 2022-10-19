@@ -38,7 +38,7 @@
     <version.cassandraunit>4.3.1.0</version.cassandraunit>
     <version.mockito>3.6.0</version.mockito>
     <version.micrometer>1.6.1</version.micrometer>
-    <version.jackson-databind>2.11.3</version.jackson-databind>
+    <version.jackson-databind>2.13.4.1</version.jackson-databind>
     <version.google-guava>30.0-jre</version.google-guava>
     <version.lettuce>6.0.1.RELEASE</version.lettuce>
   </properties>
