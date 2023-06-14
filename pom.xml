@@ -39,7 +39,7 @@
     <version.mockito>3.6.0</version.mockito>
     <version.micrometer>1.6.1</version.micrometer>
     <version.jackson-databind>2.11.3</version.jackson-databind>
-    <version.google-guava>30.0-jre</version.google-guava>
+    <version.google-guava>32.0.0-jre</version.google-guava>
     <version.lettuce>6.0.1.RELEASE</version.lettuce>
   </properties>
 
